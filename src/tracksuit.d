@@ -8,6 +8,7 @@ import std.algorithm;
 import std.conv;
 import std.csv;
 import std.typecons;
+import std.range;
 
 mixin APP_ENTRY_POINT;
 
@@ -74,10 +75,38 @@ class Deft {
           theItem.text = dtext(item.name);
            
           originalContent[theId] = item.name; 
-          //theItem.onContentChangeListener = delegate(EditableContent ec){
-          //  writeln(ec);
-          //};
 
+        theItem.onKeyListener = delegate(Widget src, KeyEvent key){
+          if(key.keyCode == KeyCode.RETURN && key.action == KeyAction.KeyUp){
+            string originalName = originalContent[src.id];
+            rename(originalName,text(src.text));
+            src.text = dtext(convertName(text(src.text)));
+            
+            int children = src.parent.childCount();
+            Widget[] childs;
+            int currentChild = 0;
+            foreach(int c; 0..children){
+              Widget it = src.parent.child(c);
+              if(it.id == src.id){
+                currentChild = c;
+              }
+              if(startsWith(it.id, "name")){
+                childs ~= src.parent.child(c);  
+              }
+            }
+
+            int nextChild = currentChild + 2;
+            if(nextChild < children){
+              src.parent.child(nextChild).setFocus();
+            } else {
+                src.parent.setFocus();
+            }
+            
+
+            return true;
+          }
+          return false;
+        };
            if(includeDone && item.status == "done"){
              theItem.enabled = false;
            }
@@ -147,21 +176,31 @@ extern (C) int UIAppMain(string[] args) {
      createItemBox.padding = 8;
      createItemBox.layoutWidth = 400;
 
-     auto createItemButton = new Button(null, "Create"d);
-     createItemButton.fontFace = "Arial"; 
+     //auto createItemButton = new Button(null, "Create"d);
+     //createItemButton.fontFace = "Arial"; 
 
      auto itemList = new TableLayout();
+     itemList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
      itemList.backgroundColor = "#E4E5E4";
      itemList.colCount = 2;
      itemList.margins = 5;
      itemList.padding = 10;
 
-     createItemButton.onClickListener = delegate(Widget src){
-        deft.createNew(text(createItemBox.text));
+    createItemBox.onKeyListener = delegate(Widget src, KeyEvent key){
+        if(key.keyCode == KeyCode.RETURN){
+          deft.createNew(text(createItemBox.text));
         createItemBox.text = "";
-        deft.updateList(itemList);         
-        return true;
+        deft.updateList(itemList);    
+        }
+        return false;
      };
+
+     //createItemButton.onClickListener = delegate(Widget src){
+     //   deft.createNew(text(createItemBox.text));
+     //   createItemBox.text = "";
+     //   deft.updateList(itemList);         
+     //   return true;
+     //};
 
      showDone.onClickListener = delegate(Widget src){
         if(src.checked){
@@ -174,7 +213,7 @@ extern (C) int UIAppMain(string[] args) {
       };
   
      createNew.addChild(createItemBox);
-     createNew.addChild(createItemButton);
+     //createNew.addChild(createItemButton);
 
      deft.updateList(itemList);
 
@@ -195,26 +234,26 @@ extern (C) int UIAppMain(string[] args) {
         return true;
      };
 
-     auto renameButton = new Button(null, "Rename"d);
-     renameButton.fontFace = "Arial"; 
+     //auto renameButton = new Button(null, "Rename"d);
+     //renameButton.fontFace = "Arial"; 
          
-     renameButton.onClickListener = delegate(Widget src){ 
-        foreach(string item; deft.actionsToPerform){
-           string locator = "name-" ~ item.split("-")[1];
-          auto theItem = itemList.childById(locator);
+     //renameButton.onClickListener = delegate(Widget src){ 
+     //   foreach(string item; deft.actionsToPerform){
+     //      string locator = "name-" ~ item.split("-")[1];
+     //     auto theItem = itemList.childById(locator);
         
-          string originalName = deft.originalContent[locator];
-          deft.rename(originalName,text(theItem.text));
+     //     string originalName = deft.originalContent[locator];
+     //     deft.rename(originalName,text(theItem.text));
           
-        }   
-        deft.updateList(itemList);
-        deft.actionsToPerform = [];
-        //deft.originalContent.destroy();
-        return true;
-     };
+     //   }   
+     //   deft.updateList(itemList);
+     //   deft.actionsToPerform = [];
+
+     //   return true;
+     //};
 
      listActions.addChild(doneButton);
-     listActions.addChild(renameButton);
+     //listActions.addChild(renameButton);
 
      vContainer.addChild(createTitle);
      vContainer.addChild(createNew);
