@@ -1,0 +1,12 @@
+{
+    "name": "tracksuit",
+    "description": "easy deft ui",
+    "authors": ["Kingsley Hendrickse"],
+    "targetPath": "bin",
+    "targetName": "tracksuit",
+    "targetType": "executable",
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+    "dependencies": {
+        "dlangui": "*",
+    }
+}
